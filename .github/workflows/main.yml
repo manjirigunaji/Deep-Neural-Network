@@ -1,0 +1,40 @@
+name: Auto Release Labeler
+
+on:
+  pull_request:
+    types: [closed]  # Trigger when a PR is closed (merged)
+
+jobs:
+  label_release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Label merged PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            if (context.payload.pull_request.merged) {
+              // Default release label
+              let releaseLabel = "release-1.0";
+
+              // Map base branches to release labels
+              const branch = context.payload.pull_request.base.ref;
+              if (branch === "main") {
+                releaseLabel = "release-1.0";
+              } else if (branch === "develop") {
+                releaseLabel = "release-1.1";
+              }
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: [releaseLabel]
+              });
+
+              console.log(`PR #${context.payload.pull_request.number} labeled as ${releaseLabel}`);
+            } else {
+              console.log("PR not merged, skipping labeling.");
+            }
