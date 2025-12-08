@@ -1,0 +1,18 @@
+name: Auto Release Labeler
+
+on:
+  pull_request:
+    types: [closed]  # Trigger when a PR is closed (merged)
+
+jobs:
+  label_release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Label merged PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            if (context.paylo
